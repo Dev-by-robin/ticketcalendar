@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Example Festival",
+    "location": "Amsterdam",
+    "startDate": "2026-08-14",
+    "startTime": "14:00",
+    "endDate": "2026-08-14",
+    "endTime": "23:00",
+    "hasTickets": true,
+    "notes": "Bring the tent"
+  },
+  {
+    "name": "Another Festival (no tickets yet)",
+    "location": "Rotterdam",
+    "startDate": "2026-09-05",
+    "startTime": "12:00",
+    "endDate": "2026-09-06",
+    "endTime": "01:00",
+    "hasTickets": false,
+    "notes": ""
+  }
+]
