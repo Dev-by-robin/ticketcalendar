@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Festival Lineup Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16231F;
+    --paper:#F6EFDF;
+    --teal:#0E3D3E;
+    --coral:#F0553B;
+    --gold:#EFB13B;
+    --line: rgba(22,35,31,0.18);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--teal);
+    background-image:
+      radial-gradient(circle at 10% 15%, rgba(239,177,59,0.10), transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(240,85,59,0.12), transparent 45%);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    min-height:100vh;
+    padding:40px 20px 80px;
+  }
+  h1,h2,.display{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:0.03em;
+  }
+  .wrap{ max-width:820px; margin:0 auto; }
+  header{ text-align:center; margin-bottom:36px; }
+  header .eyebrow{
+    color:var(--gold); font-weight:600; letter-spacing:0.25em;
+    text-transform:uppercase; font-size:13px; margin-bottom:6px;
+  }
+  header h1{
+    color:var(--paper); font-size:64px; margin:0; line-height:0.95;
+  }
+  header p{ color:rgba(246,239,223,0.7); margin-top:10px; font-size:15px;}
+
+  .panel{
+    background:var(--paper);
+    border-radius:14px;
+    padding:28px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.25);
+    margin-bottom:28px;
+  }
+  .panel h2{ font-size:28px; margin:0 0 18px; color:var(--teal); }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px 16px;
+  }
+  .grid .full{ grid-column:1 / -1; }
+  @media (max-width:600px){ .grid{ grid-template-columns:1fr; } }
+
+  label{
+    display:block; font-size:12px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--teal); opacity:0.8; margin-bottom:5px;
+  }
+  input[type=text], input[type=date], input[type=time], textarea{
+    width:100%; padding:10px 12px; border:2px solid var(--line);
+    border-radius:8px; font-family:inherit; font-size:14px;
+    background:#fff; color:var(--ink);
+  }
+  input:focus, textarea:focus{ outline:2px solid var(--coral); border-color:var(--coral); }
+  textarea{ resize:vertical; min-height:44px; }
+
+  .ticket-check{
+    display:flex; align-items:center; gap:10px;
+    background:#fff; border:2px solid var(--line); border-radius:8px;
+    padding:10px 12px; cursor:pointer; user-select:none;
+  }
+  .ticket-check input{ width:18px; height:18px; accent-color:var(--coral); }
+  .ticket-check span{ font-size:14px; font-weight:600; }
+
+  .btn{
+    font-family:'Bebas Neue', sans-serif; letter-spacing:0.05em;
+    font-size:18px; padding:12px 22px; border-radius:8px; border:none;
+    cursor:pointer; transition:transform 0.1s ease;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-primary{ background:var(--coral); color:#fff; }
+  .btn-secondary{ background:transparent; color:var(--teal); border:2px solid var(--teal); }
+  .btn-ghost{ background:transparent; color:var(--coral); border:2px dashed var(--coral); }
+  .actions{ display:flex; gap:12px; flex-wrap:wrap; margin-top:20px; }
+
+  .lineup h2{ color:var(--paper); }
+  .empty{
+    color:rgba(246,239,223,0.65); text-align:center;
+    padding:30px 10px; font-size:15px; border:2px dashed rgba(246,239,223,0.3);
+    border-radius:12px;
+  }
+
+  .stub{
+    position:relative;
+    display:flex;
+    background:var(--paper);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:16px;
+    box-shadow:0 12px 24px rgba(0,0,0,0.2);
+  }
+  .stub-main{ flex:1; padding:18px 20px; }
+  .stub-main .name{ font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--teal); line-height:1;}
+  .stub-main .meta{ font-size:13px; color:rgba(22,35,31,0.7); margin-top:6px; }
+  .stub-main .notes{ font-size:13px; color:rgba(22,35,31,0.55); margin-top:8px; font-style:italic; }
+
+  .stub-tear{
+    width:96px; flex-shrink:0;
+    border-left:2px dashed rgba(22,35,31,0.3);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:8px; padding:10px 8px; text-align:center;
+    position:relative;
+  }
+  .stub-tear::before, .stub-tear::after{
+    content:''; position:absolute; width:16px; height:16px; border-radius:50%;
+    background:var(--teal); left:-8px;
+  }
+  .stub-tear::before{ top:-8px; }
+  .stub-tear::after{ bottom:-8px; }
+  .stub-tear .stamp{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;
+    padding:5px 8px; border-radius:6px; line-height:1.3;
+  }
+  .stamp.got{ background:rgba(14,61,62,0.12); color:var(--teal); }
+  .stamp.need{ background:rgba(240,85,59,0.12); color:var(--coral); }
+  .stub-tear button{
+    background:none; border:none; color:rgba(22,35,31,0.45);
+    font-size:12px; cursor:pointer; text-decoration:underline;
+    font-family:inherit;
+  }
+  .stub-tear button:hover{ color:var(--coral); }
+
+  .hint{
+    color:rgba(246,239,223,0.75); font-size:13px; text-align:center;
+    margin-top:26px; line-height:1.6;
+  }
+  .hint code{
+    background:rgba(0,0,0,0.25); padding:2px 6px; border-radius:4px;
+    color:var(--gold); font-family:monospace;
+  }
+  #fileInput{ display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Season Lineup</div>
+    <h1>FESTIVAL EDITOR</h1>
+    <p>Add your festivals, tick off the ones you've got tickets for, export, done.</p>
+  </header>
+
+  <div class="panel">
+    <h2>Add a festival</h2>
+    <div class="grid">
+      <div class="full">
+        <label for="f-name">Festival name</label>
+        <input type="text" id="f-name" placeholder="e.g. Lowlands">
+      </div>
+      <div>
+        <label for="f-location">Location</label>
+        <input type="text" id="f-location" placeholder="e.g. Biddinghuizen">
+      </div>
+      <div class="ticket-check" id="ticket-toggle">
+        <input type="checkbox" id="f-tickets">
+        <span id="ticket-label">🎟️ I have tickets</span>
+      </div>
+      <div>
+        <label for="f-start-date">Start date</label>
+        <input type="date" id="f-start-date">
+      </div>
+      <div>
+        <label for="f-start-time">Start time</label>
+        <input type="time" id="f-start-time" value="14:00">
+      </div>
+      <div>
+        <label for="f-end-date">End date</label>
+        <input type="date" id="f-end-date">
+      </div>
+      <div>
+        <label for="f-end-time">End time</label>
+        <input type="time" id="f-end-time" value="23:00">
+      </div>
+      <div class="full">
+        <label for="f-notes">Notes (optional)</label>
+        <textarea id="f-notes" placeholder="e.g. carpool with Sam, camping ticket separate"></textarea>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="add-btn">+ Add to lineup</button>
+    </div>
+  </div>
+
+  <div class="lineup">
+    <h2>Your lineup</h2>
+    <div id="list"></div>
+    <div id="empty-msg" class="empty">No festivals yet — add your first one above.</div>
+  </div>
+
+  <div class="panel">
+    <h2>Export / Import</h2>
+    <p style="font-size:14px; color:rgba(22,35,31,0.7); margin-top:-6px;">
+      Download <code style="background:rgba(22,35,31,0.08);padding:2px 6px;border-radius:4px;">data.json</code> and upload it to your GitHub repo (replacing the existing file) to update your calendar feed. Use import to keep editing a file you already have.
+    </p>
+    <div class="actions">
+      <button class="btn btn-primary" id="export-btn">⬇ Download data.json</button>
+      <button class="btn btn-secondary" id="import-btn">⬆ Import existing data.json</button>
+      <input type="file" id="fileInput" accept="application/json">
+    </div>
+  </div>
+
+  <p class="hint">Workflow: edit here → <code>Download data.json</code> → commit it to your repo → GitHub Action rebuilds <code>calendar.ics</code> automatically.</p>
+</div>
+
+<script>
+let festivals = [];
+
+const listEl = document.getElementById('list');
+const emptyMsg = document.getElementById('empty-msg');
+
+function render(){
+  listEl.innerHTML = '';
+  if(festivals.length === 0){
+    emptyMsg.style.display = 'block';
+    return;
+  }
+  emptyMsg.style.display = 'none';
+
+  festivals
+    .slice()
+    .sort((a,b) => (a.startDate + a.startTime).localeCompare(b.startDate + b.startTime))
+    .forEach((f) => {
+      const idx = festivals.indexOf(f);
+      const stub = document.createElement('div');
+      stub.className = 'stub';
+
+      const dateLabel = formatDateRange(f.startDate, f.endDate);
+
+      stub.innerHTML = `
+        <div class="stub-main">
+          <div class="name">${escapeHtml(f.name)}</div>
+          <div class="meta">${dateLabel} · ${escapeHtml(f.location || 'No location set')}</div>
+          ${f.notes ? `<div class="notes">${escapeHtml(f.notes)}</div>` : ''}
+        </div>
+        <div class="stub-tear">
+          <div class="stamp ${f.hasTickets ? 'got' : 'need'}">${f.hasTickets ? '✓ Got it' : '⚠ Need'}</div>
+          <button data-idx="${idx}" class="remove-btn">Remove</button>
+        </div>
+      `;
+      listEl.appendChild(stub);
+    });
+
+  document.querySelectorAll('.remove-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const i = parseInt(e.target.getAttribute('data-idx'), 10);
+      festivals.splice(i, 1);
+      render();
+    });
+  });
+}
+
+function formatDateRange(start, end){
+  if(!start) return 'No date set';
+  const opts = { day:'numeric', month:'short' };
+  const s = new Date(start + 'T00:00:00');
+  const sLabel = s.toLocaleDateString('en-GB', opts);
+  if(!end || end === start) return sLabel;
+  const e = new Date(end + 'T00:00:00');
+  return `${sLabel} – ${e.toLocaleDateString('en-GB', opts)}`;
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+document.getElementById('ticket-toggle').addEventListener('click', (e) => {
+  if(e.target.tagName !== 'INPUT'){
+    const cb = document.getElementById('f-tickets');
+    cb.checked = !cb.checked;
+  }
+});
+
+document.getElementById('add-btn').addEventListener('click', () => {
+  const name = document.getElementById('f-name').value.trim();
+  const location = document.getElementById('f-location').value.trim();
+  const startDate = document.getElementById('f-start-date').value;
+  const startTime = document.getElementById('f-start-time').value || '00:00';
+  const endDate = document.getElementById('f-end-date').value || startDate;
+  const endTime = document.getElementById('f-end-time').value || startTime;
+  const hasTickets = document.getElementById('f-tickets').checked;
+  const notes = document.getElementById('f-notes').value.trim();
+
+  if(!name || !startDate){
+    alert('Please fill in at least a festival name and start date.');
+    return;
+  }
+
+  festivals.push({ name, location, startDate, startTime, endDate, endTime, hasTickets, notes });
+
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-location').value = '';
+  document.getElementById('f-start-date').value = '';
+  document.getElementById('f-end-date').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-tickets').checked = false;
+
+  render();
+});
+
+document.getElementById('export-btn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(festivals, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('import-btn').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try{
+      const parsed = JSON.parse(ev.target.result);
+      if(Array.isArray(parsed)){
+        festivals = parsed;
+        render();
+      } else {
+        alert('That file doesn\'t look like a valid data.json (expected an array).');
+      }
+    } catch(err){
+      alert('Could not parse that file as JSON.');
+    }
+  };
+  reader.readAsText(file);
+});
+
+render();
+</script>
+</body>
+</html>
